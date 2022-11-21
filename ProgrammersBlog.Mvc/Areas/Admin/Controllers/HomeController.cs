@@ -14,23 +14,21 @@ using ProgrammersBlog.Shared.Utilities.Results.ComplexTypes;
 namespace ProgrammersBlog.Mvc.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,Editor")]
-
     public class HomeController : Controller
     {
         private readonly ICategoryService _categoryService;
-        private readonly ICommentService _commentService;
         private readonly IArticleService _articleService;
+        private readonly ICommentService _commentService;
         private readonly UserManager<User> _userManager;
 
-        public HomeController(ICategoryService categoryService, ICommentService commentService, IArticleService articleService, UserManager<User> userManager)
+        public HomeController(ICategoryService categoryService, IArticleService articleService, ICommentService commentService, UserManager<User> userManager)
         {
             _categoryService = categoryService;
-            _commentService = commentService;
             _articleService = articleService;
+            _commentService = commentService;
             _userManager = userManager;
         }
-
+        [Authorize(Roles = "SuperAdmin,AdminArea.Home.Read")]
         public async Task<IActionResult> Index()
         {
             var categoriesCountResult = await _categoryService.CountByNonDeletedAsync();
@@ -38,23 +36,18 @@ namespace ProgrammersBlog.Mvc.Areas.Admin.Controllers
             var commentsCountResult = await _commentService.CountByNonDeletedAsync();
             var usersCount = await _userManager.Users.CountAsync();
             var articlesResult = await _articleService.GetAllAsync();
-
-            if(categoriesCountResult.ResultStatus==ResultStatus.Success
-                &&articlesCountResult.ResultStatus == ResultStatus.Success
-                &&commentsCountResult.ResultStatus == ResultStatus.Success
-                &&usersCount > -1
-                &&articlesResult.ResultStatus == ResultStatus.Success)
+            if (categoriesCountResult.ResultStatus==ResultStatus.Success&&articlesCountResult.ResultStatus==ResultStatus.Success&&commentsCountResult.ResultStatus==ResultStatus.Success&&usersCount>-1&&articlesResult.ResultStatus==ResultStatus.Success)
             {
                 return View(new DashboardViewModel
                 {
-                    CategoriesCount= categoriesCountResult.Data,
+                    CategoriesCount = categoriesCountResult.Data,
                     ArticlesCount = articlesCountResult.Data,
-                    CommentsCount= commentsCountResult.Data,
+                    CommentsCount = commentsCountResult.Data,
                     UsersCount = usersCount,
                     Articles = articlesResult.Data
                 });
-
             }
+
             return NotFound();
 
         }
