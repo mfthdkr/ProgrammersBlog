@@ -1,40 +1,46 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ProgrammersBlog.Mvc.AutoMapper.Profiles;
-using ProgrammersBlog.Mvc.Helpers.Abstract;
-using ProgrammersBlog.Mvc.Helpers.Concrete;
 using ProgrammersBlog.Services.AutoMapper.Profiles;
 using ProgrammersBlog.Services.Extensions;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using ProgrammersBlog.Mvc.AutoMapper.Profiles;
+using ProgrammersBlog.Mvc.Helpers.Abstract;
+using ProgrammersBlog.Mvc.Helpers.Concrete;
 
 namespace ProgrammersBlog.Mvc
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews().AddRazorRuntimeCompilation().AddJsonOptions(opt =>
+            services.AddControllersWithViews(options =>
+            {
+                options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(value=>"Bu alan boş geçilmemelidir.");
+            }).AddRazorRuntimeCompilation().AddJsonOptions(opt =>
             {
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             }).AddNToastNotifyToastr();
-            services.AddSession();
-            services.AddAutoMapper(typeof(CategoryProfile), typeof(ArticleProfile),typeof(UserProfile), typeof(ViewModelsProfile),typeof(CommentProfile));
 
-            services.LoadMyServices(connectionString: Configuration.GetConnectionString("LocalDB"));
+            services.AddSession();
+
+            services.AddAutoMapper(typeof(CategoryProfile),typeof(ArticleProfile),typeof(UserProfile),typeof(ViewModelsProfile),typeof(CommentProfile));
+
+            services.LoadMyServices(connectionString:Configuration.GetConnectionString("LocalDB"));
+
             services.AddScoped<IImageHelper, ImageHelper>();
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = new PathString("/Admin/Auth/Login");
@@ -62,13 +68,10 @@ namespace ProgrammersBlog.Mvc
             }
 
             app.UseSession();
-
             app.UseStaticFiles();
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseNToastNotify();
 
             app.UseEndpoints(endpoints =>

@@ -54,6 +54,5 @@ namespace ProgrammersBlog.Mvc.Areas.Admin.Models
         [Required]
         public int UserId { get; set; }
         public IList<Category> Categories { get; set; }
-        
     }
 }
