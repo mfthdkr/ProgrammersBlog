@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace ProgrammersBlog.Entities.Dtos
 {
-    public class UserListDto  :DtoGetBase
+    public class UserListDto : DtoGetBase
     {
         public IList<User> Users { get; set; }
+        
     }
 }

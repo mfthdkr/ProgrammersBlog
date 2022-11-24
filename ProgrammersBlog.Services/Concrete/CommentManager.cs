@@ -1,4 +1,9 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
 using ProgrammersBlog.Data.Abstract;
 using ProgrammersBlog.Entities.Concrete;
 using ProgrammersBlog.Entities.Dtos;
@@ -7,16 +12,13 @@ using ProgrammersBlog.Services.Utilities;
 using ProgrammersBlog.Shared.Utilities.Results.Abstract;
 using ProgrammersBlog.Shared.Utilities.Results.ComplexTypes;
 using ProgrammersBlog.Shared.Utilities.Results.Concrete;
-using System;
-using System.Threading.Tasks;
 
 namespace ProgrammersBlog.Services.Concrete
 {
     public class CommentManager:ManagerBase,ICommentService
     {
-       
 
-        public CommentManager(IUnitOfWork unitOfWork, IMapper mapper): base(unitOfWork, mapper)
+        public CommentManager(IUnitOfWork unitOfWork, IMapper mapper):base(unitOfWork,mapper)
         {
             
         }
@@ -115,25 +117,26 @@ namespace ProgrammersBlog.Services.Concrete
                 Comments = null,
             });
         }
+
         public async Task<IDataResult<CommentDto>> ApproveAsync(int commentId, string modifiedByName)
         {
             var comment = await UnitOfWork.Comments.GetAsync(c => c.Id == commentId, c => c.Article);
-            if (comment != null)
+            if (comment!=null)
             {
                 comment.IsActive = true;
                 comment.ModifiedByName = modifiedByName;
-                comment.ModifiedDate = DateTime.Now;
+                comment.ModifiedDate=DateTime.Now;
                 var updatedComment = await UnitOfWork.Comments.UpdateAsync(comment);
                 await UnitOfWork.SaveAsync();
-                return new  DataResult<CommentDto>(ResultStatus.Success, Messages.Comment.Approve(commentId), new CommentDto
+                return new DataResult<CommentDto>(ResultStatus.Success, Messages.Comment.Approve(commentId), new CommentDto
                 {
                     Comment = updatedComment
                 });
             }
 
-            return new DataResult<CommentDto>(ResultStatus.Error, Messages.Comment.NotFound(isPlural: false), null);
-
+            return new DataResult<CommentDto>(ResultStatus.Error, Messages.Comment.NotFound(isPlural: false),null);
         }
+
         public async Task<IDataResult<CommentDto>> AddAsync(CommentAddDto commentAddDto)
         {
             var comment = Mapper.Map<Comment>(commentAddDto);
@@ -192,6 +195,7 @@ namespace ProgrammersBlog.Services.Concrete
             }
             return new Result(ResultStatus.Error, Messages.Comment.NotFound(isPlural: false));
         }
+
         public async Task<IDataResult<CommentDto>> UndoDeleteAsync(int commentId, string modifiedByName)
         {
             var comment = await UnitOfWork.Comments.GetAsync(c => c.Id == commentId);
@@ -213,6 +217,7 @@ namespace ProgrammersBlog.Services.Concrete
                 Comment = null,
             });
         }
+
         public async Task<IDataResult<int>> CountAsync()
         {
             var commentsCount = await UnitOfWork.Comments.CountAsync();
@@ -238,7 +243,5 @@ namespace ProgrammersBlog.Services.Concrete
                 return new DataResult<int>(ResultStatus.Error, $"Beklenmeyen bir hata ile karşılaşıldı.", -1);
             }
         }
-
-        
     }
 }
